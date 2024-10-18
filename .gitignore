@@ -1,0 +1,11 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/mordheim_app/FileContentIndex
+/.vs
+/HexedSceneryMobileApp/.vs
+/HexedSceneryMobileApp/HexedSceneryMobileApp/bin/Debug
+/HexedSceneryMobileApp/HexedSceneryMobileApp/obj
+/HexedSceneryMobileApp/HexedSceneryMobileApp/appsettings.json
+*.user
