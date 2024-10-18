@@ -1,0 +1,284 @@
+﻿@page "/hiredswords"
+@using HexedSceneryMobileApp.Models
+@using HexedSceneryMobileApp.Services
+
+
+@inject IHiredSwordService HiredSwordService
+@inject IGradeService GradeService
+@inject IWarbandService WarbandService
+
+
+@if (_hiredSwords == null || _warbands == null || _grades == null)
+{
+    <span>Loading...</span>
+}
+else
+{
+    <h1>Hired Swords</h1>
+    <div>&nbsp;</div>
+    <MudExpansionPanels>
+        <MudExpansionPanel Expanded="false" Text="@FilterTitle" Class="schoensperger text no-gutters" Gutters="false">
+            <div class="flex-row d-flex gap-4">
+                <div class="flex-grow-1 d-flex flex-column">
+                    <h3>Min. Grade</h3>
+                    <MudSelect T="Grade" @bind-Value="_selectedMinGrade" Placeholder="Select grade" Clearable="true" Variant="Variant.Outlined">
+                        @foreach(var grade in _grades)
+                        {
+                            <MudSelectItem Value="@grade">@grade.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <h3>Max. Grade</h3>
+                    <MudSelect T="Grade" @bind-Value="_selectedMaxGrade" Placeholder="Select grade" Clearable="true" Variant="Variant.Outlined">
+                        @foreach(var grade in _grades)
+                        {
+                            <MudSelectItem Value="@grade">@grade.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudSpacer />
+                    <MudSpacer />
+                    <MudSpacer />
+                    <MudSpacer />
+                    <MudButton OnClick="@ClearFilters">Clear filters</MudButton>
+                </div>
+                <div class="flex-column d-flex flex-grow-1">
+                    <h3>Warband</h3>
+                    <MudTable Items="@_warbands" Dense="true" SelectedItemChanged="WarbandOnSelectedItemChanged" T="Warband" @ref="_warbandTable" Hover="true" Filter="new Func<Warband, bool>(WarbandFiltering)" RowClassFunc="@WarbandSelectedRowClassFunc">
+                        <ToolBarContent>
+                            <MudTextField @bind-Value="_warbandSearchString" Placeholder="Search warband" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                        </ToolBarContent>
+                        <RowTemplate>
+                            <MudTd Class="caslon-antique text justify-start">@context.Name</MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager HideRowsPerPage="true" />
+                        </PagerContent>
+                    </MudTable>
+                </div>
+            </div>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+
+    <MudTable Items="@CurrentHiredSwords" @ref="_hiredSwordTable" T="HiredSword" Dense="true" Filter="new Func<HiredSword,bool>(HiredSwordFiltering)" Class="d-flex flex-column">
+        <ToolBarContent>
+            <MudTextField @bind-Value="_hiredSwordSearchString" Placeholder="Search hired sword" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh Class="schoensperger text"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<HiredSword, object>(x=>x.Name)">Hired Sword</MudTableSortLabel></MudTh>
+            <MudTh Class="schoensperger text"><MudTableSortLabel SortBy="new Func<HiredSword, object>(x=>x.HireFee)">Hire Fee</MudTableSortLabel></MudTh>
+            <MudTh Class="schoensperger text"><MudTableSortLabel SortBy="new Func<HiredSword, object>(x=>x.UpkeepCost)">Upkeep Cost</MudTableSortLabel></MudTh>
+            <MudTh Class="schoensperger text"><MudTableSortLabel SortBy="new Func<HiredSword, object>(x=>x.Grade.Name)">Grade</MudTableSortLabel></MudTh>
+            <MudTh Class="schoensperger text"><MudTableSortLabel SortBy="new Func<HiredSword, object>(x=>x.Source.Key)">Source</MudTableSortLabel></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Class="caslon-antique text" DataLabel="Hired Sword">@context.Name</MudTd>
+            <MudTd Class="caslon-antique text" DataLabel="Hire Fee">@context.HireFee gc</MudTd>
+            <MudTd Class="caslon-antique text" DataLabel="Upkeep Cost">@context.UpkeepCost gc</MudTd>
+            <MudTd Class="caslon-antique text" DataLabel="Grade">@context.Grade.Name</MudTd>
+            <MudTd Class="caslon-antique text" DataLabel="Source">
+                @if (!string.IsNullOrEmpty(context.Source.PdfUrl))
+                {
+                    <MudButton Href="@context.Source.PdfUrl"
+                               Target="_blank"
+                               EndIcon="@Icons.Material.Filled.OpenInNew">
+                        @context.Source.Key
+                    </MudButton>
+
+                }
+                else
+                {
+                    <MudButton EndIcon="@Icons.Material.Filled.OpenInNewOff">
+                        @context.Source.Key
+                    </MudButton>
+                }
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager HideRowsPerPage="true" />
+        </PagerContent>
+    </MudTable>
+}
+
+@code {
+    private List<HiredSword> _hiredSwords;
+    private List<Warband> _warbands;
+    private List<Grade> _grades;
+
+    private List<HiredSword> CurrentHiredSwords 
+    {
+        get
+        {
+            var hiredSwords = _hiredSwords;
+            if (_selectedWarband != null)
+            {
+                hiredSwords = hiredSwords.Where(m => _selectedWarband.CompatibleHiredSwordIds.Contains(m.Id)).ToList();
+            }
+
+            if (_selectedMinGrade != null)
+            {
+                hiredSwords = hiredSwords.Where(m => m.GradeId >= _selectedMinGrade.Id).ToList();
+            }
+
+            if (_selectedMaxGrade != null)
+            {
+                hiredSwords = hiredSwords.Where(m => m.GradeId <= _selectedMaxGrade.Id).ToList();
+            }
+
+            return hiredSwords;
+        }
+    }
+
+    private string _hiredSwordSearchString = "";
+    private string _warbandSearchString = "";
+    private string _filterTitle = "Filters";
+
+    private string FilterTitle
+    {
+        get
+        {
+            UpdateFilterTitle();
+            return _filterTitle;
+        }
+    }
+
+    private Warband _selectedWarband;
+    private Grade _selectedMinGrade;
+    private Grade _selectedMaxGrade;
+
+    private MudTable<HiredSword> _hiredSwordTable;
+    private MudTable<Warband> _warbandTable;
+    private MudList<Grade> _minGrade;
+    private MudList<Grade> _maxGrade;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _warbands = await WarbandService.GetWarbandsAsync();
+        _grades = await GradeService.GetGradesAsync();
+        _hiredSwords = await HiredSwordService.GetHiredSwordsAsync();
+    }
+
+    private bool HiredSwordFiltering(HiredSword element) => HiredSwordFilterFunc(element, _hiredSwordSearchString);
+
+    private bool HiredSwordFilterFunc(HiredSword element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Grade.Name.StartsWith(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Source.Key.StartsWith(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+    private bool WarbandFiltering(Warband element) => WarbandFilterFunc(element, _warbandSearchString);
+
+    private bool WarbandFilterFunc(Warband element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Race.Name.StartsWith(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+    private Span<Warband> GetWarbandSpan()
+    {
+        var span = new Span<Warband>(_warbands.ToArray());
+        return span;
+    }
+
+    private string WarbandSelectedRowClassFunc(Warband element, int rowNumber)
+    {
+        var response = string.Empty;
+
+        if (_selectedWarband != null && _selectedWarband.Equals(element))
+        {
+            response = "selected";
+        }
+
+        return response;
+    }
+
+    private void WarbandOnSelectedItemChanged(Warband element)
+    {
+        if (_selectedWarband == element)
+        {
+            _selectedWarband = null;
+        }
+        else
+        {
+            _selectedWarband = element;
+        }
+
+        UpdateFilterTitle();
+    }
+
+    private void MinGradeSelectedItemChanged(Grade element)
+    {
+        _selectedMinGrade = element;
+        UpdateFilterTitle();
+    }
+
+    private void MaxGradeSelectedItemChanged(Grade element)
+    {
+        _selectedMaxGrade = element;
+        UpdateFilterTitle();
+    }
+
+    private void ClearFilters()
+    {
+        _warbandTable.SelectedItem = null;
+        _selectedMinGrade = null;
+        _selectedMaxGrade = null;
+    }
+
+    private void UpdateFilterTitle()
+    {
+        var title = "Filters";
+        string warband = string.Empty;
+        string minGrade = string.Empty;
+        string maxGrade = string.Empty;
+
+        if (_selectedWarband != null)
+        {
+            warband = $"Warband: {_selectedWarband.Name}";
+            title = $"{title} (Warband: {_selectedWarband.Name}, ";
+        }
+        if (_selectedMinGrade != null)
+        {
+            if (title.Last() == ' ')
+            {
+                title = $"{title}Min. Grade: {_selectedMinGrade.Name}, ";
+            }
+            else
+            {
+                title = $"{title} (Min. Grade: {_selectedMinGrade.Name}, ";
+            }
+        }
+        if (_selectedMaxGrade != null)
+        {
+            if (title.Last() == ' ')
+            {
+                title = $"{title}Max. Grade: {_selectedMaxGrade.Name}, ";
+            }
+            else
+            {
+                title = $"{title} (Max. Grade: {_selectedMaxGrade.Name}, ";
+            }
+        }
+
+        if (title.EndsWith(", "))
+        {
+            title = title.Substring(0, title.LastIndexOf(','));
+            title = $"{title})";
+        }
+
+
+        _filterTitle = title;
+        // StateHasChanged();
+    }
+}

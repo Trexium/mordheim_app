@@ -1,0 +1,81 @@
+﻿@page "/encounterType/{encountertypeid}"
+@using HexedSceneryMobileApp.Services
+
+@inject IEncounterService EncounterService
+@inject IMyRollsService MyRollsService
+
+@if (_encounterType == null)
+{
+    <span>Loading...</span>
+}
+else
+{
+    <h1>@_encounterType.DisplayName</h1>
+
+    <HexedSceneryMobileApp.Components.Components.DiceRoller @ref="_diceRollerRef" DiceTypeId="@_encounterType.DiceType.Id" NumberOfDice="@_encounterType.NumberOfDice.Value" OnNewResult="UpdateDiceResult" />
+
+    if (_encounterType.Description != null)
+    {
+        <div>&nbsp;</div>
+        <MudExpansionPanels>
+            <MudExpansionPanel Class="schoensperger text" Text="Description" Expanded="false">
+                <div class="description">
+                    @((MarkupString)_encounterType.Description)
+                </div>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    }
+
+    @if (_encounterRoll != null)
+    {
+        <HexedSceneryMobileApp.Components.Components.Encounter CurrentRoll="@_encounterRoll" EncounterTypeId="@_encounterType.Id" />
+    }
+}
+
+
+
+
+@code {
+    [Parameter]
+    public string EncounterTypeId { get; set; }
+
+    private Models.EncounterType _encounterType;
+
+    // private Models.Encounter _encounterResult;
+
+    private Models.Roll? _encounterRoll;
+
+    private Components.DiceRoller _diceRollerRef;
+
+    private Guid? _encounterUniqueRollId;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (int.TryParse(EncounterTypeId, out int result))
+        {
+            _encounterType = await EncounterService.GetEncounterTypeAsync(result);
+            if (_diceRollerRef != null)
+            {
+                await _diceRollerRef.ClearResult();
+                _encounterRoll = null;
+            }
+        }
+    }
+
+    public async Task UpdateDiceResult(Models.Roll newResult)
+    {
+        _encounterRoll = newResult;
+        var encounter = await EncounterService.GetEncounterAsync(_encounterType.Id, _encounterRoll.ResultNumber);
+        _encounterRoll.Encounter = encounter;
+        _encounterRoll.ChildChart = encounter.DiceChart;
+        _encounterRoll.EncounterType = _encounterType;
+        _encounterUniqueRollId = await MyRollsService.AddRoll(_encounterRoll);
+        // _encounterResult = encounter;
+    }
+}

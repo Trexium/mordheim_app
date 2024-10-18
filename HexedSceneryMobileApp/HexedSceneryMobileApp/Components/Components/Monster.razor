@@ -1,0 +1,94 @@
+﻿@using HexedSceneryMobileApp.Services
+
+
+@inject IMonsterService MonsterService
+
+
+@if (_monster == null)
+{
+    <span>Loading...</span>
+}
+else
+{
+    <MudExpansionPanels>
+        <MudExpansionPanel Class="schoensperger text no-gutters" Text="@_monster.Name" Expanded="true">
+
+            <MudTable Items="_profiles" Class="no-gutters flat" Breakpoint="Breakpoint.None">
+                <HeaderContent>
+                    <MudTh Class="caslon-antique-bold text">Profile</MudTh>
+                    <MudTh Class="caslon-antique-bold text">M</MudTh>
+                    <MudTh Class="caslon-antique-bold text">WS</MudTh>
+                    <MudTh Class="caslon-antique-bold text">BS</MudTh>
+                    <MudTh Class="caslon-antique-bold text">S</MudTh>
+                    <MudTh Class="caslon-antique-bold text">T</MudTh>
+                    <MudTh Class="caslon-antique-bold text">W</MudTh>
+                    <MudTh Class="caslon-antique-bold text">I</MudTh>
+                    <MudTh Class="caslon-antique-bold text">A</MudTh>
+                    <MudTh Class="caslon-antique-bold text">Ld</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd Class="caslon-antique text" DataLabel="Profile">@context.Name</MudTd>
+                    <MudTd Class="caslon-antique text" DataLabel="M">@context.Movement</MudTd>
+                    <MudTd Class="caslon-antique text" DataLabel="WS">@context.WeaponSkill</MudTd>
+                    <MudTd Class="caslon-antique text" DataLabel="BS">@context.BallisticSkill</MudTd>
+                    <MudTd Class="caslon-antique text" DataLabel="S">@context.Strength</MudTd>
+                    <MudTd Class="caslon-antique text" DataLabel="T">@context.Toughness</MudTd>
+                    <MudTd Class="caslon-antique text" DataLabel="W">@context.Wounds</MudTd>
+                    <MudTd Class="caslon-antique text" DataLabel="I">@context.Initiative</MudTd>
+                    <MudTd Class="caslon-antique text" DataLabel="A">@context.Attacks</MudTd>
+                    <MudTd Class="caslon-antique text" DataLabel="Ld">@context.Leadership</MudTd>
+                </RowTemplate>
+            </MudTable>
+            <div>&nbsp;</div>
+            <p class="caslon-antique">
+                @foreach (var equipment in _monster.Equipments)
+                {
+                    @((MarkupString)equipment.Name)
+                }
+            </p>
+
+            @foreach (var skill in _monster.Skills)
+            {
+                <div class="mb-3">
+                    <h3>@skill.Name</h3>
+                    <span class="caslon-antique">
+                        @((MarkupString)skill.Description)
+                    </span>
+                </div>
+            }
+            @foreach (var specialRule in _monster.SpecialRules)
+            {
+                <div>
+                    <h3>@specialRule.Name</h3>
+                    <span class="caslon-antique">
+                        @((MarkupString)specialRule.Description)
+                    </span>
+                </div>
+            }
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+}
+
+
+
+@code {
+    [Parameter]
+    public int MonsterId { get; set; }
+
+    private Models.Monster _monster;
+    private List<Models.Profile> _profiles;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _monster = await MonsterService.GetMonsterAsync(MonsterId);
+        _profiles = new List<Models.Profile>();
+        _profiles.Add(_monster.Profile);
+
+        if (_monster.AdditionalProfiles != null && _monster.AdditionalProfiles.Any())
+        {
+            _profiles.AddRange(_monster.AdditionalProfiles);
+        }
+
+        StateHasChanged();
+    }
+}

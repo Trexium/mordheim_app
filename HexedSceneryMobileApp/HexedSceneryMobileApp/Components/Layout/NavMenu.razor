@@ -1,0 +1,88 @@
+﻿
+@using HexedSceneryMobileApp.Models
+@using System.Linq;
+@using HexedSceneryMobileApp.Services
+
+@inject IMenuService MenuService
+
+<div class="background-paper-menu">
+    <svg>
+        <filter id="wavy2">
+            <feTurbulence x="0" y="0" baseFrequency="0.022" numOctaves="5" seed="1"></feTurbulence>
+            <feDisplacementMap in="SourceGraphic" scale="50" />
+        </filter>
+    </svg>
+</div>
+
+<MudNavMenu Class="overflow-hidden">
+    <br />
+    @if (_menu == null)
+    {
+        <span>Loading...</span>
+    }
+    else
+    {
+        @if (_menu.Items != null)
+        {
+            @foreach (var item in _menu.Items)
+            {
+                <MudNavLink Href="@item.Url" Match="NavLinkMatch.Prefix" @OnClick="@OnNavItemClick">@item.DisplayText</MudNavLink>
+            }
+        }
+        @if (_menu.Groups != null)
+        {
+            @foreach (var group in _menu.Groups)
+            {
+                <MudNavGroup Class="top-level-group" Title="@group.DisplayText" @bind-Expanded="@group.Expanded" onclick="@(() => ToggleExpanded(group.Id))">
+                    @if (group.Groups != null)
+                    {
+                        @foreach (var subGroup in group.Groups)
+                        {
+                            <MudNavGroup Title="@subGroup.DisplayText">
+                                @foreach (var item in subGroup.Items)
+                                {
+                                    <MudNavLink Href="@item.Url" Match="NavLinkMatch.Prefix" @OnClick="@OnNavItemClick">@item.DisplayText</MudNavLink>
+                                }
+                            </MudNavGroup>
+                        }
+                    }
+                    @if (group.Items != null)
+                    {
+                        @foreach (var item in group.Items)
+                        {
+                            <MudNavLink Href="@item.Url" Match="NavLinkMatch.Prefix" @OnClick="@OnNavItemClick">@item.DisplayText</MudNavLink>
+                        }
+                    }
+                </MudNavGroup>
+            }
+        }
+
+    }
+
+</MudNavMenu>
+
+
+@code {
+    [Parameter]
+    public Action OnNavItemClick { get; set; }
+
+    private Menu _menu;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _menu = await MenuService.GetMenuAsync();
+    }
+
+
+    private void ToggleExpanded(string identifier)
+    {
+        foreach (var group in _menu.Groups)
+        {
+            if (group.Id != identifier)
+            {
+                group.Expanded = false;
+            }
+        }
+        StateHasChanged();
+    }
+}

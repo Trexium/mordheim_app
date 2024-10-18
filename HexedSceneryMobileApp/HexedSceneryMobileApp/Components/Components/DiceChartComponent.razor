@@ -1,0 +1,134 @@
+﻿@using HexedSceneryMobileApp.Helpers
+@using HexedSceneryMobileApp.Models
+@using HexedSceneryMobileApp.Services
+
+
+@inject IDiceRollHelper DiceRollHelper
+@inject IDiceService DiceService
+@inject IDiceChartService DiceChartService
+@inject IMyRollsService MyRollsService
+
+@if (_diceChart == null || _diceType == null)
+{
+    <span>Loading...</span>
+}
+else
+{
+    @if (DiceResults == null)
+    {
+        <MudTable Items="@_diceChart.DiceResults" @ref="_mudTable" T="DiceResult" RowClassFunc="@SelectedRowClassFunc" Breakpoint="Breakpoint.None">
+            <HeaderContent>
+                <MudTh Class="schoensperger text"><MudButton OnClick="Roll" aria-label="roll" Class="schoensperger text">@_diceChart.Dice</MudButton></MudTh>
+                <MudTh Class="schoensperger text">Result</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <div data-id="@context.ResultNumber" hidden></div>
+                <MudTd Class="caslon-antique text" DataLabel="@_diceChart.Dice">
+                    @if (string.IsNullOrEmpty(context.Name))
+                    {
+                        @context.ResultNumber
+                    }
+                    else
+                    {
+                        @context.Name
+                    }
+                </MudTd>
+                <MudTd Class="caslon-antique text" DataLabel="Result">@((MarkupString)context.Description)</MudTd>
+            </RowTemplate>
+        </MudTable>
+
+        <MudIconButton OnClick="Roll" Icon="@Icons.Material.Filled.Casino" aria-label="roll" />
+    }
+    else
+    {
+        <MudTable SelectedItems="@DiceResults" MultiSelection="true" Items="@_diceChart.DiceResults" @ref="_mudTable" T="DiceResult" RowClassFunc="@SelectedRowClassFunc" Breakpoint="Breakpoint.None">
+            <HeaderContent>
+                <MudTh Class="schoensperger text"><MudButton OnClick="Roll" aria-label="roll" Class="schoensperger text">@_diceChart.Dice</MudButton></MudTh>
+                <MudTh Class="schoensperger text">Result</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <div data-id="@context.ResultNumber" hidden></div>
+                <MudTd Class="caslon-antique text" DataLabel="@_diceChart.Dice">
+                    @if (string.IsNullOrEmpty(context.Name))
+                    {
+                        @context.ResultNumber
+                    }
+                    else
+                    {
+                        @context.Name
+                    }
+                </MudTd>
+                <MudTd Class="caslon-antique text" DataLabel="Result">@((MarkupString)context.Description)</MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+
+}
+
+@code {
+    [Parameter]
+    public int DiceChartId { get; set; }
+
+    [Parameter]
+    public Guid? ParentRollId { get; set; }
+
+    [Parameter]
+    public HashSet<DiceResult> DiceResults { get; set; }
+
+    private DiceType _diceType;
+    private DiceChart _diceChart;
+
+    private int? _result;
+
+    private MudTable<DiceResult> _mudTable;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _diceChart = await DiceChartService.GetDiceChartAsync(DiceChartId);
+        _diceType = await DiceService.GetDiceTypeAsync(_diceChart.DiceTypeId.Value);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+    private async Task Roll()
+    {
+        _result = await DiceRollHelper.Roll(_diceType, _diceChart.NumberOfDice ?? 1);
+
+        var row = _mudTable.Items.FirstOrDefault(m => m.ResultNumber == _result);
+        if (row != null && ParentRollId.HasValue)
+        {
+            await MyRollsService.AddChildRoll(ParentRollId.Value, row);
+            _mudTable.SetSelectedItem(row);
+        }
+        StateHasChanged();
+    }
+
+    private string SelectedRowClassFunc(DiceResult element, int rowNumber)
+    {
+        if (_mudTable.MultiSelection)
+        {
+            if (_mudTable.SelectedItems != null && _mudTable.SelectedItems.Contains(element))
+            {
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+        else
+        {
+            if (_mudTable.SelectedItem != null && _mudTable.SelectedItem.Equals(element))
+            {
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+    }
+}

@@ -1,0 +1,67 @@
+﻿@using HexedSceneryMobileApp.Services
+
+
+@inject IMyRollsService MyRollsService
+
+
+
+<MudDrawer @bind-Open="@_open" Fixed="false" Anchor="Anchor.Top" Elevation="1" Variant="@DrawerVariant.Temporary" OverlayAutoClose="true" Width="90%" Height="80%" OverlayVisible="true">
+
+    <MudDrawerHeader Class="d-flex flex-row justify-space-between pt-7">
+        <div>&nbsp;</div>
+        <div>
+            <MudText Typo="Typo.h3" Align="Align.Center" Class="schoensperger">My Rolls</MudText>
+        </div>
+        <div>
+            <MudButton ButtonType="ButtonType.Button" Class="caslon-antique text" OnClick="MyRollsService.RemoveAll">Clear</MudButton>
+        </div>
+    </MudDrawerHeader>
+    <div class="my-rolls">
+        <MudTable Items="@MyRollsService.MyRolls" T="Models.Roll" Elevation="0">
+            <HeaderContent>
+                <MudTh Class="schoensperger text">Chart</MudTh>
+                <MudTh Class="schoensperger text">Result</MudTh>
+                <MudTh Class="schoensperger text">Effect</MudTh>
+                <MudTh Class="schoensperger text">Sub chart result</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudNavLink Href="@($"cachedroll/{context.Id}")" Match="NavLinkMatch.Prefix" >
+                    <MudTd DataLabel="Chart" Class="caslon-antique text chart">@context.EncounterType.DisplayName</MudTd>
+                    <MudTd DataLabel="Result" Class="caslon-antique text">@($"{context.ResultNumber} - {context.Encounter.ShortName}")</MudTd>
+                    <MudTd DataLabel="Effect" Class="caslon-antique text">@((MarkupString)context.Encounter.ShortDescription)</MudTd>
+                    @if (context.ChildChartResults != null && context.ChildChartResults.Any())
+                    {
+                        @foreach(var subChartResult in context.ChildChartResults)
+                        {
+                            <MudTd DataLabel="Sub Chart Result" Class="caslon-antique">@((MarkupString)$"{subChartResult.ResultNumber} - {subChartResult.ShortDescription}")</MudTd>
+                        }
+                        
+                    }
+                </MudNavLink>
+            </RowTemplate>
+        </MudTable>
+    </div>
+</MudDrawer>
+<div class="bottom-spacer">&nbsp;</div>
+<div class="justify-center d-flex flex-row pb-14 fixed" style="bottom:0; left:0; width:100%;">
+    <MudFab Label="@(_open ? "Close" : "My Rolls")" Color="Color.Dark" ButtonType="ButtonType.Button" OnClick="Toggle" Class="caslon-antique text mx-1" />
+</div>
+
+
+
+
+@code {
+    private bool _open;
+
+    private MudTable<Models.Roll> _table;
+
+    private void Toggle()
+    {
+        _open = !_open;
+    }
+
+    private void OpenFullRoll()
+    {
+        
+    }
+}

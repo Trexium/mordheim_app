@@ -1,0 +1,36 @@
+﻿@page "/"
+@using HexedSceneryMobileApp.Services
+
+@inject IWarbandService WarbandService
+@inject IGradeService GradeService
+@inject IHiredSwordService HiredSwordService
+@inject IDiceService DiceService
+@inject IDiceChartService DiceChartService
+@inject IMonsterService MonsterService
+@inject IEncounterService EncounterService
+@inject NavigationManager NavigationManager
+
+<PageTitle>HexedScenery</PageTitle>
+
+<h1>Mordheim</h1>
+
+@code
+{
+    protected override async Task OnInitializedAsync()
+    {
+        // Load caches
+        await WarbandService.GetWarbandsAsync();
+        await GradeService.GetGradesAsync();
+        await HiredSwordService.GetHiredSwordsAsync();
+        await DiceService.LoadCachesAsync();
+        await DiceChartService.LoadCachesAsync();
+        await MonsterService.LoadCachesAsync();
+        await EncounterService.LoadCachesAsync();
+        NavigationManager.NavigateTo("encounterType/1");
+    }
+
+    private void DoNothing()
+    {
+        
+    }
+}

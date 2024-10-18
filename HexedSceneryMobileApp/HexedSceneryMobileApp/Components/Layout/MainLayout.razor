@@ -1,0 +1,48 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+
+<div class="background-paper">
+    <svg>
+        <filter id="wavy2">
+            <feTurbulence x="0" y="0" baseFrequency="0.022" numOctaves="5" seed="1"></feTurbulence>
+            <feDisplacementMap in="SourceGraphic" scale="50" />
+        </filter>
+    </svg>
+</div>
+
+<MudLayout Style="height:100%;">
+    <MudIconButton Class="" Style="position:absolute;left: 30px; top: 10px;" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="1" Style="background-color: transparent; box-shadow:none;">
+        <NavMenu OnNavItemClick="@DrawerToggle"/>
+    </MudDrawer>
+    <MudMainContent Style="height:100%;">
+        <MudContainer MaxWidth="MaxWidth.Small" style="flex-direction: column; height: 100%;" Class="d-flex my-5 mx-auto pt-5 align-content-center align-center align-stretch">
+            @Body
+            <HexedSceneryMobileApp.Components.Components.MyRolls />
+        </MudContainer>
+        
+    </MudMainContent>
+    
+</MudLayout>
+
+@code {
+    bool _drawerOpen = true;
+    string _drawerButtonClass = "invisible";
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+        _drawerButtonClass = _drawerOpen ? "invisible" : "visible";
+        StateHasChanged();
+    }
+}

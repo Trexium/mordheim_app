@@ -1,0 +1,75 @@
+﻿@using Services
+@using HexedSceneryMobileApp.Helpers
+@using HexedSceneryMobileApp.Models
+
+@inject IDiceRollHelper DiceRollHelper
+@inject IDiceService DiceService
+
+@if (_diceType == null)
+{
+    <span>Loading...</span>
+}
+else
+{
+    <div style="flex-direction: row;" class="d-flex">
+        <MudTextField T="int?" DebounceInterval="500" Value=@_diceResult Label="@_label" Variant="@Variant.Text" OnDebounceIntervalElapsed="ManualDiceResultInput" />
+        <MudIconButton OnClick="Roll" Icon="@Icons.Material.Filled.Casino" aria-label="shuffle" />
+    </div>
+}
+
+
+
+
+@code {
+    [Parameter]
+    public int DiceTypeId { get; set; }
+    [Parameter]
+    public int NumberOfDice { get; set; }
+    [Parameter]
+    public EventCallback<Roll> OnNewResult { get; set; }
+
+    private int? _diceResult;
+
+    private DiceType _diceType { get; set; }
+    private string _label;
+
+    public async Task Roll()
+    {
+        _diceResult = await DiceRollHelper.Roll(_diceType, NumberOfDice);
+
+        await TriggerNewResult();
+
+        StateHasChanged();
+    }
+
+    public async Task ClearResult()
+    {
+        _diceResult = null;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _diceType = await DiceService.GetDiceTypeAsync(DiceTypeId);
+        _label = $"Roll {NumberOfDice}{_diceType.DisplayName} and enter the result or push the button to roll the dice";
+    }
+
+    private async Task ManualDiceResultInput(string value)
+    {
+
+        if (int.TryParse(value, out int result))
+        {
+            _diceResult = result;
+            await TriggerNewResult();
+        }
+    }
+
+    private async Task TriggerNewResult()
+    {
+        if (_diceResult.HasValue)
+        {
+            var roll = new Roll();
+            roll.ResultNumber = _diceResult.Value;
+            await OnNewResult.InvokeAsync(roll);
+        }
+    }
+}

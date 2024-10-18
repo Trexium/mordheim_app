@@ -1,0 +1,49 @@
+﻿@using HexedSceneryMobileApp.Services
+
+
+
+@if (CurrentRoll == null)
+{
+    <span>Loading...</span>
+}
+else
+{
+    <div>&nbsp;</div>
+    <h3 class="schoensperger xtra-large-text">@CurrentRoll.Encounter.Name</h3>
+    <p class="caslon-antique text">@((MarkupString)CurrentRoll.Encounter.Description)</p>
+
+    @if (CurrentRoll.Encounter.DiceChartId.HasValue)
+    {
+        <div>&nbsp;</div>
+        @if (CurrentRoll.ChildChartResults == null)
+        {
+            <DiceChartComponent DiceChartId="@CurrentRoll.Encounter.DiceChartId.Value" ParentRollId="@CurrentRoll.Id" />
+        }
+        else
+        {
+            <DiceChartComponent DiceChartId="@CurrentRoll.Encounter.DiceChartId.Value" ParentRollId="@CurrentRoll.Id" DiceResults="@CurrentRoll.ChildChartResults.ToHashSet()" />
+        }
+    }
+    @if (CurrentRoll.Encounter.MonsterId.HasValue)
+    {
+        <div>&nbsp;</div>
+        <Monster MonsterId="CurrentRoll.Encounter.MonsterId.Value" />
+    }
+}
+
+
+@code {
+
+    [Parameter]
+    public int EncounterTypeId { get; set; }
+
+    [Parameter]
+    public Models.Roll CurrentRoll { get; set; }
+
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        
+    }
+}
