@@ -187,22 +187,12 @@ aside.mud-drawer-pos-top {
     aside.mud-drawer-pos-top > div.mud-drawer-content {
         padding-left: 2%;
         padding-right: 2%;
-        /*background-color: transparent;*/
         border: none;
-        /*background: var(--paper-color);*/
         background: #fffef0;
         margin: 2rem;
-        /*padding: calc(var(--top-space) - 0.5lh) 3rem 1rem 5.5rem;*/
         padding: 0 0.5rem 1rem 1rem;
         line-height: 2rem;
         color: var(--ink-color);
-        /*background-image:*/
-        /* the red line */ /*linear-gradient( 90deg, transparent, transparent 4rem, var(--side-line-color) 4rem, var(--side-line-color) 4.25rem, transparent 4.25rem ),*/
-        /*  The top space  */
-        /*linear-gradient( var(--paper-color), var(--paper-color) var(--top-space), transparent var(--top-space) ),*/
-        /* the blue lines */
-        /*repeating-linear-gradient( transparent, transparent calc(1lh - var(--line-thickness)), var(--main-line-color) calc(1lh - var(--line-thickness)), var(--main-line-color) 1lh, transparent 1lh )*/;
-        /*repeating-linear-gradient( transparent, transparent calc(2lh - var(--line-thickness)), var(--main-line-color) calc(2lh - var(--line-thickness)), var(--main-line-color) 2lh, transparent 2lh );*/
         box-shadow: 0 0 1rem rgb(0 0 0 / 0.25);
         height: fit-content;
         max-height: fit-content;
@@ -219,7 +209,6 @@ aside.mud-drawer-pos-top {
 
 div.my-rolls {
     padding: 0px !important;
-    /*margin: 2lh 0px 0px 0px !important;*/
     margin: 0px 0px 0px 0px !important;
 }
 
@@ -244,7 +233,6 @@ div.my-rolls > div > div > div > p {
 
 div.my-rolls > div.mud-table > div > table > tbody > tr > td {
     padding: 0px;
-    /*border: none !important;*/
 }
 
 div.my-rolls > div.mud-table > div > table > tbody > tr > td.chart {
@@ -265,10 +253,6 @@ td.mud-table-cell::before {
     font-family: Schoensperger;
     padding: 0px !important;
 }
-
-/*td.mud-table-cell.effect::before {
-    padding: 0px;
-}*/
 
 td.mud-table-cell.effect > div > div > div {
     padding: 0px;
@@ -306,11 +290,8 @@ div.mud-table.no-gutters > div.mud-table-container > table > tbody > tr > td {
 }
 
 :root {
-    /*--main-line-color: hsl(234, 62%, 86%);*/
     --main-line-color: #DCDCDC;
-    /*--side-line-color: hsl(350, 100%, 91%);*/
     --side-line-color: #DCDCDC;
-    /*--paper-color: hsl(0, 15%, 95%);*/
     --paper-color: #fffef0;
     --ink-color: hsl(0, 0%, 12%);
     --line-thickness: 1px;

@@ -1,4 +1,5 @@
 ﻿
+using CommunityToolkit.Maui;
 using HexedSceneryMobileApp.Helpers;
 using HexedSceneryMobileApp.Services;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +16,7 @@ namespace HexedSceneryMobileApp
         {
             var builder = MauiApp.CreateBuilder();
             builder
-                .UseMauiApp<App>()
+                .UseMauiApp<App>().UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

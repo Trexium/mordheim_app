@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider />
+<MudThemeProvider Theme="MyCustomTheme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudPopoverProvider />
@@ -33,6 +33,18 @@
 @code {
     bool _drawerOpen = true;
     string _drawerButtonClass = "invisible";
+
+    MudTheme MyCustomTheme = new MudTheme()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Dark = "#11052b"
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Dark = "#11052b"
+        }
+    };
 
     protected override async Task OnInitializedAsync()
     {
