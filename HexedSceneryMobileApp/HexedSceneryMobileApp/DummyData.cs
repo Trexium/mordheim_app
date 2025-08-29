@@ -599,5 +599,10 @@ namespace HexedSceneryMobileApp
         {
 
         }
+
+        public Task<bool> ValidateDiceResult(int result, int numberOfDice, int diceTypeId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

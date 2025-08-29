@@ -58,8 +58,11 @@ else
 
         if (int.TryParse(value, out int result))
         {
-            _diceResult = result;
-            await TriggerNewResult();
+            if (await DiceService.ValidateDiceResult(result, NumberOfDice, DiceTypeId))
+            {
+                _diceResult = result;
+                await TriggerNewResult();
+            }
         }
     }
 
